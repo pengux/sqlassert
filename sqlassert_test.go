@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"os"
 	"testing"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func getDB() *sql.DB {
-	db, err := sql.Open("postgres", os.Getenv("POSTGRES_DB_URL"))
+	db, err := sql.Open("pgx", os.Getenv("POSTGRES_DB_URL"))
 	if err != nil {
 		panic("unable to open database: " + err.Error())
 	}
