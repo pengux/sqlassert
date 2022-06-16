@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:13-alpine
+    healthcheck:
+      test: pg_isready -d postgres -U sqlassert
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      - POSTGRES_USER=sqlassert
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=sqlassert
+    ports:
+      - 5432:5432
+
+  migrate:
+    image: migrate/migrate:v4.14.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: -path=/migrations/ -database "postgresql://sqlassert:password@postgres:5432/sqlassert?sslmode=disable" up
+    volumes:
+      - ./testdata/migrations/postgres:/migrations
