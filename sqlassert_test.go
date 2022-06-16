@@ -7,7 +7,7 @@ import (
 )
 
 func getDB() *sql.DB {
-	db, err := sql.Open("pgx", os.Getenv("DB_URL"))
+	db, err := sql.Open("postgres", os.Getenv("POSTGRES_DB_URL"))
 	if err != nil {
 		panic("unable to open database: " + err.Error())
 	}
