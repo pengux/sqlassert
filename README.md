@@ -1,3 +1,7 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/pengux/sqlassert.svg)](https://pkg.go.dev/github.com/pengux/sqlassert)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pengux/sqlassert)](https://goreportcard.com/report/github.com/pengux/sqlassert)
+[![Coverage Status](https://coveralls.io/repos/github/pengux/sqlassert/badge.svg?branch=master)](https://coveralls.io/github/pengux/sqlassert?branch=master)
+
 # sqlassert
 Go package with assertion helpers for SQL databases
 
