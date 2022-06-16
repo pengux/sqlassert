@@ -1,8 +1,5 @@
 module github.com/pengux/sqlassert
 
-go 1.16
+go 1.18
 
-require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
-	github.com/jackc/pgx/v4 v4.16.1 // indirect
-)
+require github.com/DATA-DOG/go-sqlmock v1.5.0
