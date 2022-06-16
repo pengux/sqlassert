@@ -2,8 +2,9 @@ package sqlassert_test
 
 import (
 	"fmt"
-	"sqlassert"
 	"testing"
+
+	"github.com/pengux/sqlassert"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/v4/stdlib"

@@ -1,4 +1,4 @@
-module sqlassert
+module github.com/pengux/sqlassert
 
 go 1.16
 
