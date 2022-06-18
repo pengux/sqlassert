@@ -146,7 +146,7 @@ func rowNotExists(
 func indexExists(
 	t testingT,
 	db *sql.DB,
-	query, table, index string,
+	query string, table, index string,
 ) bool {
 	exists := queryExists(nilT, db, query, table, index)
 	if !exists {

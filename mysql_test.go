@@ -9,72 +9,72 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-func TestPostgresAsserter(t *testing.T) {
-	pgasserter := sqlassert.NewPostgresAsserter(getPostgresDB())
+func TestMysqlAsserter(t *testing.T) {
+	mysqlAsserter := sqlassert.NewMysqlAsserter(getMysqlDB())
 
 	table := "sqlassert_test"
 	column := "sku"
-	constraint := "sqlassert_test_pkey"
+	constraint := "PRIMARY"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
 	nonExisting := "non_existing"
 
-	pgasserter.TableExists(t, table)
-	pgasserter.ColumnExists(t, table, column)
-	pgasserter.ConstraintExists(t, table, constraint)
-	pgasserter.RowExists(t, table, row)
-	pgasserter.IndexExists(t, table, index)
+	mysqlAsserter.TableExists(t, table)
+	mysqlAsserter.ColumnExists(t, table, column)
+	mysqlAsserter.ConstraintExists(t, table, constraint)
+	mysqlAsserter.RowExists(t, table, row)
+	mysqlAsserter.IndexExists(t, table, index)
 
-	pgasserter.TableNotExists(t, nonExisting)
-	pgasserter.ColumnNotExists(t, table, nonExisting)
-	pgasserter.ConstraintNotExists(t, table, nonExisting)
-	pgasserter.RowNotExists(t, table, map[string]interface{}{"sku": nonExisting})
-	pgasserter.IndexNotExists(t, table, nonExisting)
+	mysqlAsserter.TableNotExists(t, nonExisting)
+	mysqlAsserter.ColumnNotExists(t, table, nonExisting)
+	mysqlAsserter.ConstraintNotExists(t, table, nonExisting)
+	mysqlAsserter.RowNotExists(t, table, map[string]interface{}{"sku": nonExisting})
+	mysqlAsserter.IndexNotExists(t, table, nonExisting)
 }
 
-func TestPostgresAsserterError(t *testing.T) {
-	pgasserter := sqlassert.NewPostgresAsserter(getPostgresDB())
+func TestMysqlAsserterError(t *testing.T) {
+	mysqlAsserter := sqlassert.NewMysqlAsserter(getMysqlDB())
 	mockT := new(mockT)
 
 	table := "sqlassert_test"
 	column := "sku"
-	constraint := "sqlassert_test_pkey"
+	constraint := "PRIMARY"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
 	nonExisting := "non_existing"
 
-	pgasserter.TableExists(mockT, nonExisting)
+	mysqlAsserter.TableExists(mockT, nonExisting)
 	mockT.expectLastError(t, "table "+nonExisting+" does not exist")
 
-	pgasserter.ColumnExists(mockT, table, nonExisting)
+	mysqlAsserter.ColumnExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "column "+nonExisting+" does not exist in table "+table)
 
-	pgasserter.ConstraintExists(mockT, table, nonExisting)
+	mysqlAsserter.ConstraintExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "constraint "+nonExisting+" does not exist in table "+table)
 
-	pgasserter.RowExists(mockT, table, map[string]interface{}{"sku": nonExisting})
+	mysqlAsserter.RowExists(mockT, table, map[string]interface{}{"sku": nonExisting})
 	mockT.expectLastError(t, "row with criteria map[sku:"+nonExisting+"] does not exist in table "+table)
 
-	pgasserter.IndexExists(mockT, table, nonExisting)
+	mysqlAsserter.IndexExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "index "+nonExisting+" does not exist in table "+table)
 
-	pgasserter.TableNotExists(mockT, table)
+	mysqlAsserter.TableNotExists(mockT, table)
 	mockT.expectLastError(t, "table "+table+" exists")
 
-	pgasserter.ColumnNotExists(mockT, table, column)
+	mysqlAsserter.ColumnNotExists(mockT, table, column)
 	mockT.expectLastError(t, "column "+column+" exists in table "+table)
 
-	pgasserter.ConstraintNotExists(mockT, table, constraint)
+	mysqlAsserter.ConstraintNotExists(mockT, table, constraint)
 	mockT.expectLastError(t, "constraint "+constraint+" exists in table "+table)
 
-	pgasserter.RowNotExists(mockT, table, row)
+	mysqlAsserter.RowNotExists(mockT, table, row)
 	mockT.expectLastError(t, "row with criteria map[name:name1 sku:sku1] exists in table "+table)
 
-	pgasserter.IndexNotExists(mockT, table, index)
+	mysqlAsserter.IndexNotExists(mockT, table, index)
 	mockT.expectLastError(t, "index "+index+" exists in table "+table)
 }
 
-func TestPostgresAsserterPanic(t *testing.T) {
+func TestMysqlAsserterPanic(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -85,7 +85,7 @@ func TestPostgresAsserterPanic(t *testing.T) {
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 
-	pgasserter := sqlassert.NewPostgresAsserter(db)
+	mysqlAsserter := sqlassert.NewMysqlAsserter(db)
 
 	table := "sqlassert_test"
 	column := "sku"
@@ -93,9 +93,9 @@ func TestPostgresAsserterPanic(t *testing.T) {
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
 
-	assertPanic(t, "error", func() { pgasserter.TableExists(t, table) })
-	assertPanic(t, "error", func() { pgasserter.ColumnExists(t, table, column) })
-	assertPanic(t, "error", func() { pgasserter.ConstraintExists(t, table, constraint) })
-	assertPanic(t, "error", func() { pgasserter.RowExists(t, table, row) })
-	assertPanic(t, "error", func() { pgasserter.IndexExists(t, table, index) })
+	assertPanic(t, "error", func() { mysqlAsserter.TableExists(t, table) })
+	assertPanic(t, "error", func() { mysqlAsserter.ColumnExists(t, table, column) })
+	assertPanic(t, "error", func() { mysqlAsserter.ConstraintExists(t, table, constraint) })
+	assertPanic(t, "error", func() { mysqlAsserter.RowExists(t, table, row) })
+	assertPanic(t, "error", func() { mysqlAsserter.IndexExists(t, table, index) })
 }

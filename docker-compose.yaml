@@ -1,25 +1,50 @@
 version: "3.9"
 services:
-  postgres:
-    image: postgres:13-alpine
+  mariadb:
+    image: mariadb:10.7
     healthcheck:
-      test: pg_isready -d postgres -U sqlassert
+      test: mysql sqlassert --user=sqlassert --password='password' --silent --execute "USE sqlassert;"
       timeout: 45s
       interval: 10s
       retries: 10
     restart: always
     environment:
-      - POSTGRES_USER=sqlassert
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=sqlassert
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+      MARIADB_USER: sqlassert
+      MARIADB_PASSWORD: password
+      MARIADB_DATABASE: sqlassert
+    ports:
+      - 3306:3306
+
+  postgres:
+    image: postgres:14-alpine
+    healthcheck:
+      test: pg_isready -d sqlassert -U sqlassert
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      POSTGRES_USER: sqlassert
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sqlassert
     ports:
       - 5432:5432
 
-  migrate:
+  migrate_postgres:
     image: migrate/migrate:v4.14.1
     depends_on:
       postgres:
         condition: service_healthy
-    command: -path=/migrations/ -database "postgresql://sqlassert:password@postgres:5432/sqlassert?sslmode=disable" up
+    command: -path=/migrations/postgres -database "postgresql://sqlassert:password@postgres:5432/sqlassert?sslmode=disable" up
     volumes:
-      - ./testdata/migrations/postgres:/migrations
+      - ./testdata/migrations/postgres:/migrations/postgres
+
+  migrate_mysql:
+    image: migrate/migrate:v4.14.1
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    command: -path=/migrations/mysql -database "mysql://sqlassert:password@tcp(mariadb:3306)/sqlassert" up
+    volumes:
+      - ./testdata/migrations/mysql:/migrations/mysql

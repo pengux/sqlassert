@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
@@ -28,8 +29,17 @@ func (mt *mockT) expectLastError(t *testing.T, msg string) {
 	}
 }
 
-func getDB() *sql.DB {
+func getPostgresDB() *sql.DB {
 	db, err := sql.Open("pgx", os.Getenv("POSTGRES_DB_URL"))
+	if err != nil {
+		panic("unable to open database: " + err.Error())
+	}
+
+	return db
+}
+
+func getMysqlDB() *sql.DB {
+	db, err := sql.Open("mysql", os.Getenv("MYSQL_DB_URL"))
 	if err != nil {
 		panic("unable to open database: " + err.Error())
 	}
