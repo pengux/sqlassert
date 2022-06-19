@@ -158,15 +158,10 @@ SELECT EXISTS(
 SELECT EXISTS(
 	SELECT 1
 	FROM
-		pg_class t,
-		pg_class i,
-		pg_index ix
+		pg_indexes
 	WHERE
-		t.oid = ix.indrelid
-		AND i.oid = ix.indexrelid
-		AND t.relkind = 'r'
-		AND t.relname = $1
-		AND i.relname = $2
+		tablename = $1
+		AND indexname= $2
 );
 `
 )
