@@ -24,6 +24,7 @@ func (mt *mockT) lastError() string {
 }
 
 func (mt *mockT) expectLastError(t *testing.T, msg string) {
+	t.Helper()
 	if mt.lastError() != msg {
 		t.Errorf("expected error '%s', got '%s'", msg, mt.lastError())
 	}
@@ -48,6 +49,7 @@ func getMysqlDB() *sql.DB {
 }
 
 func assertPanic(t *testing.T, msg string, f func()) {
+	t.Helper()
 	defer func() {
 		r := recover()
 		if r == nil || r.(error).Error() != msg {

@@ -44,34 +44,34 @@ func TestMysqlAsserterError(t *testing.T) {
 	nonExisting := "non_existing"
 
 	mysqlAsserter.TableExists(mockT, nonExisting)
-	mockT.expectLastError(t, "table "+nonExisting+" does not exist")
+	mockT.expectLastError(t, "table '"+nonExisting+"' does not exist")
 
 	mysqlAsserter.ColumnExists(mockT, table, nonExisting)
-	mockT.expectLastError(t, "column "+nonExisting+" does not exist in table "+table)
+	mockT.expectLastError(t, "column '"+nonExisting+"' does not exist in table '"+table+"'")
 
 	mysqlAsserter.ConstraintExists(mockT, table, nonExisting)
-	mockT.expectLastError(t, "constraint "+nonExisting+" does not exist in table "+table)
+	mockT.expectLastError(t, "constraint '"+nonExisting+"' does not exist in table '"+table+"'")
 
 	mysqlAsserter.RowExists(mockT, table, map[string]interface{}{"sku": nonExisting})
-	mockT.expectLastError(t, "row with criteria map[sku:"+nonExisting+"] does not exist in table "+table)
+	mockT.expectLastError(t, "row with criteria map[sku:"+nonExisting+"] does not exist in table '"+table+"'")
 
 	mysqlAsserter.IndexExists(mockT, table, nonExisting)
-	mockT.expectLastError(t, "index "+nonExisting+" does not exist in table "+table)
+	mockT.expectLastError(t, "index '"+nonExisting+"' does not exist in table '"+table+"'")
 
 	mysqlAsserter.TableNotExists(mockT, table)
-	mockT.expectLastError(t, "table "+table+" exists")
+	mockT.expectLastError(t, "table '"+table+"' exists")
 
 	mysqlAsserter.ColumnNotExists(mockT, table, column)
-	mockT.expectLastError(t, "column "+column+" exists in table "+table)
+	mockT.expectLastError(t, "column '"+column+"' exists in table '"+table+"'")
 
 	mysqlAsserter.ConstraintNotExists(mockT, table, constraint)
-	mockT.expectLastError(t, "constraint "+constraint+" exists in table "+table)
+	mockT.expectLastError(t, "constraint '"+constraint+"' exists in table '"+table+"'")
 
 	mysqlAsserter.RowNotExists(mockT, table, row)
-	mockT.expectLastError(t, "row with criteria map[name:name1 sku:sku1] exists in table "+table)
+	mockT.expectLastError(t, "row with criteria map[name:name1 sku:sku1] exists in table '"+table+"'")
 
 	mysqlAsserter.IndexNotExists(mockT, table, index)
-	mockT.expectLastError(t, "index "+index+" exists in table "+table)
+	mockT.expectLastError(t, "index '"+index+"' exists in table '"+table+"'")
 }
 
 func TestMysqlAsserterPanic(t *testing.T) {
@@ -79,6 +79,7 @@ func TestMysqlAsserterPanic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+	mock.ExpectQuery("SELECT DATABASE()").WillReturnRows(sqlmock.NewRows([]string{"database()"}).AddRow("sqlassert"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))

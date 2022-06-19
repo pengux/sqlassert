@@ -4,6 +4,19 @@ import (
 	"database/sql"
 )
 
+const (
+	errTableNotExists      = "table '%s' does not exist"
+	errTableExists         = "table '%s' exists"
+	errColumnNotExists     = "column '%s' does not exist in table '%s'"
+	errColumnExists        = "column '%s' exists in table '%s'"
+	errConstraintNotExists = "constraint '%s' does not exist in table '%s'"
+	errConstraintExists    = "constraint '%s' exists in table '%s'"
+	errRowNotExists        = "row with criteria %v does not exist in table '%s'"
+	errRowExists           = "row with criteria %v exists in table '%s'"
+	errIndexNotExists      = "index '%s' does not exist in table '%s'"
+	errIndexExists         = "index '%s' exists in table '%s'"
+)
+
 type testingT interface {
 	Errorf(format string, args ...interface{})
 }
@@ -15,7 +28,6 @@ func (n nilTestingT) Errorf(format string, args ...interface{}) {}
 var nilT = new(nilTestingT)
 
 func queryExists(
-	t testingT,
 	db *sql.DB,
 	query string,
 	args ...interface{},
@@ -34,9 +46,9 @@ func tableExists(
 	db *sql.DB,
 	query, table string,
 ) bool {
-	exists := queryExists(t, db, query, table)
+	exists := queryExists(db, query, table)
 	if !exists {
-		t.Errorf("table %s does not exist", table)
+		t.Errorf(errTableNotExists, table)
 	}
 
 	return exists
@@ -47,9 +59,9 @@ func tableNotExists(
 	db *sql.DB,
 	query, table string,
 ) bool {
-	exists := queryExists(nilT, db, query, table)
+	exists := queryExists(db, query, table)
 	if exists {
-		t.Errorf("table %s exists", table)
+		t.Errorf(errTableExists, table)
 	}
 
 	return !exists
@@ -60,9 +72,9 @@ func columnExists(
 	db *sql.DB,
 	query, table, column string,
 ) bool {
-	exists := queryExists(t, db, query, table, column)
+	exists := queryExists(db, query, table, column)
 	if !exists {
-		t.Errorf("column %s does not exist in table %s", column, table)
+		t.Errorf(errColumnNotExists, column, table)
 	}
 
 	return exists
@@ -73,9 +85,9 @@ func columnNotExists(
 	db *sql.DB,
 	query, table, column string,
 ) bool {
-	exists := queryExists(nilT, db, query, table, column)
+	exists := queryExists(db, query, table, column)
 	if exists {
-		t.Errorf("column %s exists in table %s", column, table)
+		t.Errorf(errColumnExists, column, table)
 	}
 
 	return !exists
@@ -86,9 +98,9 @@ func constraintExists(
 	db *sql.DB,
 	query, table, constraint string,
 ) bool {
-	exists := queryExists(t, db, query, table, constraint)
+	exists := queryExists(db, query, table, constraint)
 	if !exists {
-		t.Errorf("constraint %s does not exist in table %s", constraint, table)
+		t.Errorf(errConstraintNotExists, constraint, table)
 	}
 
 	return exists
@@ -99,9 +111,9 @@ func constraintNotExists(
 	db *sql.DB,
 	query, table, constraint string,
 ) bool {
-	exists := queryExists(nilT, db, query, table, constraint)
+	exists := queryExists(db, query, table, constraint)
 	if exists {
-		t.Errorf("constraint %s exists in table %s", constraint, table)
+		t.Errorf(errConstraintExists, constraint, table)
 	}
 
 	return !exists
@@ -118,9 +130,9 @@ func rowExists(
 ) bool {
 	query, args := builder(table, colVals)
 
-	exists := queryExists(nilT, db, query, args...)
+	exists := queryExists(db, query, args...)
 	if !exists {
-		t.Errorf("row with criteria %v does not exist in table %s", colVals, table)
+		t.Errorf(errRowNotExists, colVals, table)
 	}
 
 	return exists
@@ -135,9 +147,9 @@ func rowNotExists(
 ) bool {
 	query, args := builder(table, colVals)
 
-	exists := queryExists(nilT, db, query, args...)
+	exists := queryExists(db, query, args...)
 	if exists {
-		t.Errorf("row with criteria %v exists in table %s", colVals, table)
+		t.Errorf(errRowExists, colVals, table)
 	}
 
 	return !exists
@@ -148,9 +160,9 @@ func indexExists(
 	db *sql.DB,
 	query string, table, index string,
 ) bool {
-	exists := queryExists(nilT, db, query, table, index)
+	exists := queryExists(db, query, table, index)
 	if !exists {
-		t.Errorf("index %s does not exist in table %s", index, table)
+		t.Errorf(errIndexNotExists, index, table)
 	}
 
 	return exists
@@ -161,9 +173,9 @@ func indexNotExists(
 	db *sql.DB,
 	query, table, index string,
 ) bool {
-	exists := queryExists(nilT, db, query, table, index)
+	exists := queryExists(db, query, table, index)
 	if exists {
-		t.Errorf("index %s exists in table %s", index, table)
+		t.Errorf(errIndexExists, index, table)
 	}
 
 	return !exists

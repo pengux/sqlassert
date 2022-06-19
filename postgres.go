@@ -34,43 +34,97 @@ func NewPostgresAsserter(db *sql.DB) *PostgresAsserter {
 }
 
 func (pa *PostgresAsserter) TableExists(t testingT, table string) bool {
-	return tableExists(t, pa.db, postgresTableExistsQuery, table)
+	exists := queryExists(pa.db, postgresTableExistsQuery, table)
+	if !exists {
+		t.Errorf(errTableNotExists, table)
+	}
+
+	return exists
 }
 
 func (pa *PostgresAsserter) TableNotExists(t testingT, table string) bool {
-	return tableNotExists(t, pa.db, postgresTableExistsQuery, table)
+	exists := queryExists(pa.db, postgresTableExistsQuery, table)
+	if exists {
+		t.Errorf(errTableExists, table)
+	}
+
+	return !exists
 }
 
 func (pa *PostgresAsserter) ColumnExists(t testingT, table, column string) bool {
-	return columnExists(t, pa.db, postgresColumnExistsQuery, table, column)
+	exists := queryExists(pa.db, postgresColumnExistsQuery, table, column)
+	if !exists {
+		t.Errorf(errColumnNotExists, column, table)
+	}
+
+	return exists
 }
 
 func (pa *PostgresAsserter) ColumnNotExists(t testingT, table, column string) bool {
-	return columnNotExists(t, pa.db, postgresColumnExistsQuery, table, column)
+	exists := queryExists(pa.db, postgresColumnExistsQuery, table, column)
+	if exists {
+		t.Errorf(errColumnExists, column, table)
+	}
+
+	return !exists
 }
 
 func (pa *PostgresAsserter) ConstraintExists(t testingT, table, constraint string) bool {
-	return constraintExists(t, pa.db, postgresConstraintExistsQuery, table, constraint)
+	exists := queryExists(pa.db, postgresConstraintExistsQuery, table, constraint)
+	if !exists {
+		t.Errorf(errConstraintNotExists, constraint, table)
+	}
+
+	return exists
 }
 
 func (pa *PostgresAsserter) ConstraintNotExists(t testingT, table, constraint string) bool {
-	return constraintNotExists(t, pa.db, postgresConstraintExistsQuery, table, constraint)
+	exists := queryExists(pa.db, postgresConstraintExistsQuery, table, constraint)
+	if exists {
+		t.Errorf(errConstraintExists, constraint, table)
+	}
+
+	return !exists
 }
 
 func (pa *PostgresAsserter) RowExists(t testingT, table string, colVals map[string]interface{}) bool {
-	return rowExists(t, pa.db, table, colVals, pa.rowExistsQueryBuilder)
+	query, args := pa.rowExistsQueryBuilder(table, colVals)
+
+	exists := queryExists(pa.db, query, args...)
+	if !exists {
+		t.Errorf(errRowNotExists, colVals, table)
+	}
+
+	return exists
 }
 
 func (pa *PostgresAsserter) RowNotExists(t testingT, table string, colVals map[string]interface{}) bool {
-	return rowNotExists(t, pa.db, table, colVals, pa.rowExistsQueryBuilder)
+	query, args := pa.rowExistsQueryBuilder(table, colVals)
+
+	exists := queryExists(pa.db, query, args...)
+	if exists {
+		t.Errorf(errRowExists, colVals, table)
+	}
+
+	return !exists
 }
 
 func (pa *PostgresAsserter) IndexExists(t testingT, table, index string) bool {
-	return indexExists(t, pa.db, postgresIndexExistsQuery, table, index)
+	exists := queryExists(pa.db, postgresIndexExistsQuery, table, index)
+	if !exists {
+		t.Errorf(errIndexNotExists, index, table)
+	}
+
+	return exists
 }
 
 func (pa *PostgresAsserter) IndexNotExists(t testingT, table, index string) bool {
-	return indexNotExists(t, pa.db, postgresIndexExistsQuery, table, index)
+	exists := queryExists(pa.db, postgresIndexExistsQuery, table, index)
+	if exists {
+		t.Errorf(errIndexExists, index, table)
+	}
+
+	return !exists
 }
 
 const (

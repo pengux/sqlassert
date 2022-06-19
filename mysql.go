@@ -9,12 +9,20 @@ import (
 // MysqlAsserter contains assertion helpers for mysqlql databases
 type MysqlAsserter struct {
 	db                    *sql.DB
+	dbName                string
 	rowExistsQueryBuilder rowExistsQueryBuilder
 }
 
 func NewMysqlAsserter(db *sql.DB) *MysqlAsserter {
+	var dbName string
+	err := db.QueryRow("SELECT DATABASE()").Scan(&dbName)
+	if err != nil {
+		panic(err)
+	}
+
 	return &MysqlAsserter{
-		db: db,
+		db:     db,
+		dbName: dbName,
 		rowExistsQueryBuilder: func(
 			table string,
 			colVals map[string]interface{},
@@ -34,56 +42,111 @@ func NewMysqlAsserter(db *sql.DB) *MysqlAsserter {
 }
 
 func (pa *MysqlAsserter) TableExists(t testingT, table string) bool {
-	return tableExists(t, pa.db, mysqlTableExistsQuery, table)
+	exists := queryExists(pa.db, mysqlTableExistsQuery, pa.dbName, table)
+	if !exists {
+		t.Errorf(errTableNotExists, table)
+	}
+
+	return exists
 }
 
 func (pa *MysqlAsserter) TableNotExists(t testingT, table string) bool {
-	return tableNotExists(t, pa.db, mysqlTableExistsQuery, table)
+	exists := queryExists(pa.db, mysqlTableExistsQuery, pa.dbName, table)
+	if exists {
+		t.Errorf(errTableExists, table)
+	}
+
+	return !exists
 }
 
 func (pa *MysqlAsserter) ColumnExists(t testingT, table, column string) bool {
-	return columnExists(t, pa.db, mysqlColumnExistsQuery, table, column)
+	exists := queryExists(pa.db, mysqlColumnExistsQuery, pa.dbName, table, column)
+	if !exists {
+		t.Errorf(errColumnNotExists, column, table)
+	}
+
+	return exists
 }
 
 func (pa *MysqlAsserter) ColumnNotExists(t testingT, table, column string) bool {
-	return columnNotExists(t, pa.db, mysqlColumnExistsQuery, table, column)
+	exists := queryExists(pa.db, mysqlColumnExistsQuery, pa.dbName, table, column)
+	if exists {
+		t.Errorf(errColumnExists, column, table)
+	}
+
+	return !exists
 }
 
 func (pa *MysqlAsserter) ConstraintExists(t testingT, table, constraint string) bool {
-	return constraintExists(t, pa.db, mysqlConstraintExistsQuery, table, constraint)
+	exists := queryExists(pa.db, mysqlConstraintExistsQuery, pa.dbName, table, constraint)
+	if !exists {
+		t.Errorf(errConstraintNotExists, constraint, table)
+	}
+
+	return exists
 }
 
 func (pa *MysqlAsserter) ConstraintNotExists(t testingT, table, constraint string) bool {
-	return constraintNotExists(t, pa.db, mysqlConstraintExistsQuery, table, constraint)
+	exists := queryExists(pa.db, mysqlConstraintExistsQuery, pa.dbName, table, constraint)
+	if exists {
+		t.Errorf(errConstraintExists, constraint, table)
+	}
+
+	return !exists
 }
 
 func (pa *MysqlAsserter) RowExists(t testingT, table string, colVals map[string]interface{}) bool {
-	return rowExists(t, pa.db, table, colVals, pa.rowExistsQueryBuilder)
+	query, args := pa.rowExistsQueryBuilder(table, colVals)
+
+	exists := queryExists(pa.db, query, args...)
+	if !exists {
+		t.Errorf(errRowNotExists, colVals, table)
+	}
+
+	return exists
 }
 
 func (pa *MysqlAsserter) RowNotExists(t testingT, table string, colVals map[string]interface{}) bool {
-	return rowNotExists(t, pa.db, table, colVals, pa.rowExistsQueryBuilder)
+	query, args := pa.rowExistsQueryBuilder(table, colVals)
+
+	exists := queryExists(pa.db, query, args...)
+	if exists {
+		t.Errorf(errRowExists, colVals, table)
+	}
+
+	return !exists
 }
 
 func (pa *MysqlAsserter) IndexExists(t testingT, table, index string) bool {
-	return indexExists(t, pa.db, mysqlIndexExistsQuery, table, index)
+	exists := queryExists(pa.db, mysqlIndexExistsQuery, pa.dbName, table, index)
+	if !exists {
+		t.Errorf(errIndexNotExists, index, table)
+	}
+
+	return exists
 }
 
 func (pa *MysqlAsserter) IndexNotExists(t testingT, table, index string) bool {
-	return indexNotExists(t, pa.db, mysqlIndexExistsQuery, table, index)
+	exists := queryExists(pa.db, mysqlIndexExistsQuery, pa.dbName, table, index)
+	if exists {
+		t.Errorf(errIndexExists, index, table)
+	}
+
+	return !exists
 }
 
 const (
 	mysqlTableExistsQuery = `
 SELECT EXISTS (
-	SELECT 1 FROM information_schema.tables WHERE table_name = ?
+	SELECT 1 FROM information_schema.tables WHERE table_schema = ? AND table_name = ?
 )
 `
 	mysqlColumnExistsQuery = `
 SELECT EXISTS(
 	SELECT 1 FROM information_schema.columns
 	WHERE
-		table_name = ?
+		table_schema = ?
+		AND table_name = ?
 		AND column_name = ?
 );
 `
@@ -91,7 +154,8 @@ SELECT EXISTS(
 SELECT EXISTS(
 	SELECT 1 FROM information_schema.table_constraints
 	WHERE
-		table_name = ?
+		table_schema = ?
+		AND table_name = ?
 		AND constraint_name = ?
 );
 `
@@ -106,7 +170,8 @@ SELECT EXISTS(
 SELECT EXISTS(
 	SELECT 1 FROM information_schema.statistics
 	WHERE
-		table_name = ?
+		table_schema = ?
+		AND table_name = ?
 		AND index_name = ?
 );
 `
