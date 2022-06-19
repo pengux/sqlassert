@@ -9,6 +9,10 @@ Use `sqlassert` in your integration tests or write assertions for schema changes
 
 ## Usage
 
+```
+go get github.com/pengux/sqlassert
+```
+
 Example:
 
 ```
@@ -44,7 +48,7 @@ func TestMigration(t *testing.T) {
 ## Supported databases
 
 - [x] Postgresql
-- [ ] Mysql
+- [x] Mysql
 - [ ] SQLite
 - [ ] Microsoft SQL Server
 - [ ] Oracle
