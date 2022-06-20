@@ -84,6 +84,10 @@ func TestMysqlAsserterPanic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
+
+	mock.ExpectQuery("SELECT DATABASE()").WillReturnError(fmt.Errorf("error"))
+	assertPanic(t, "error", func() { _ = sqlassert.NewMysqlAsserter(db) })
+
 	mock.ExpectQuery("SELECT DATABASE()").WillReturnRows(sqlmock.NewRows([]string{"database()"}).AddRow("sqlassert"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
