@@ -14,6 +14,7 @@ func TestPostgresAsserter(t *testing.T) {
 
 	table := "sqlassert_test"
 	column := "sku"
+	dataType := "text"
 	constraint := "sqlassert_test_pkey"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
@@ -21,6 +22,7 @@ func TestPostgresAsserter(t *testing.T) {
 
 	pgasserter.TableExists(t, table)
 	pgasserter.ColumnExists(t, table, column)
+	pgasserter.ColumnOfType(t, table, column, dataType)
 	pgasserter.ConstraintExists(t, table, constraint)
 	pgasserter.RowExists(t, table, row)
 	pgasserter.IndexExists(t, table, index)
@@ -48,6 +50,9 @@ func TestPostgresAsserterError(t *testing.T) {
 
 	pgasserter.ColumnExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "column '"+nonExisting+"' does not exist in table '"+table+"'")
+
+	pgasserter.ColumnOfType(mockT, table, column, nonExisting)
+	mockT.expectLastError(t, "column '"+column+"' in table '"+table+"' is not of type '"+nonExisting+"'")
 
 	pgasserter.ConstraintExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "constraint '"+nonExisting+"' does not exist in table '"+table+"'")
@@ -84,17 +89,20 @@ func TestPostgresAsserterPanic(t *testing.T) {
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
+	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 
 	pgasserter := sqlassert.NewPostgresAsserter(db)
 
 	table := "sqlassert_test"
 	column := "sku"
+	dataType := "text"
 	constraint := "sqlassert_test_pkey"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
 
 	assertPanic(t, "error", func() { pgasserter.TableExists(t, table) })
 	assertPanic(t, "error", func() { pgasserter.ColumnExists(t, table, column) })
+	assertPanic(t, "error", func() { pgasserter.ColumnOfType(t, table, column, dataType) })
 	assertPanic(t, "error", func() { pgasserter.ConstraintExists(t, table, constraint) })
 	assertPanic(t, "error", func() { pgasserter.RowExists(t, table, row) })
 	assertPanic(t, "error", func() { pgasserter.IndexExists(t, table, index) })

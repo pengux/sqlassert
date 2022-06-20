@@ -9,6 +9,7 @@ const (
 	errTableExists         = "table '%s' exists"
 	errColumnNotExists     = "column '%s' does not exist in table '%s'"
 	errColumnExists        = "column '%s' exists in table '%s'"
+	errColumnNotOfType     = "column '%s' in table '%s' is not of type '%s'"
 	errConstraintNotExists = "constraint '%s' does not exist in table '%s'"
 	errConstraintExists    = "constraint '%s' exists in table '%s'"
 	errRowNotExists        = "row with criteria %v does not exist in table '%s'"

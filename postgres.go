@@ -69,6 +69,15 @@ func (pa *PostgresAsserter) ColumnNotExists(t testingT, table, column string) bo
 	return !exists
 }
 
+func (pa *PostgresAsserter) ColumnOfType(t testingT, table, column, dataType string) bool {
+	exists := queryExists(pa.db, postgresColumnOfTypeQuery, table, column, dataType)
+	if !exists {
+		t.Errorf(errColumnNotOfType, column, table, dataType)
+	}
+
+	return exists
+}
+
 func (pa *PostgresAsserter) ConstraintExists(t testingT, table, constraint string) bool {
 	exists := queryExists(pa.db, postgresConstraintExistsQuery, table, constraint)
 	if !exists {
@@ -139,6 +148,15 @@ SELECT EXISTS(
 	WHERE
 		table_name = $1
 		AND column_name = $2
+);
+`
+	postgresColumnOfTypeQuery = `
+SELECT EXISTS(
+	SELECT 1 FROM information_schema.columns
+	WHERE
+		table_name = $1
+		AND column_name = $2
+		AND data_type = $3
 );
 `
 	postgresConstraintExistsQuery = `
