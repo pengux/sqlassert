@@ -14,6 +14,7 @@ func TestMysqlAsserter(t *testing.T) {
 
 	table := "sqlassert_test"
 	column := "sku"
+	dataType := "varchar"
 	constraint := "PRIMARY"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
@@ -21,6 +22,7 @@ func TestMysqlAsserter(t *testing.T) {
 
 	mysqlAsserter.TableExists(t, table)
 	mysqlAsserter.ColumnExists(t, table, column)
+	mysqlAsserter.ColumnOfType(t, table, column, dataType)
 	mysqlAsserter.ConstraintExists(t, table, constraint)
 	mysqlAsserter.RowExists(t, table, row)
 	mysqlAsserter.IndexExists(t, table, index)
@@ -48,6 +50,9 @@ func TestMysqlAsserterError(t *testing.T) {
 
 	mysqlAsserter.ColumnExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "column '"+nonExisting+"' does not exist in table '"+table+"'")
+
+	mysqlAsserter.ColumnOfType(mockT, table, column, nonExisting)
+	mockT.expectLastError(t, "column '"+column+"' in table '"+table+"' is not of type '"+nonExisting+"'")
 
 	mysqlAsserter.ConstraintExists(mockT, table, nonExisting)
 	mockT.expectLastError(t, "constraint '"+nonExisting+"' does not exist in table '"+table+"'")
@@ -85,17 +90,20 @@ func TestMysqlAsserterPanic(t *testing.T) {
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
+	mock.ExpectQuery("SELECT EXISTS").WillReturnError(fmt.Errorf("error"))
 
 	mysqlAsserter := sqlassert.NewMysqlAsserter(db)
 
 	table := "sqlassert_test"
 	column := "sku"
+	dataType := "varchar"
 	constraint := "sqlassert_test_pkey"
 	row := map[string]interface{}{"sku": "sku1", "name": "name1"}
 	index := "sqlassert_test_name_idx"
 
 	assertPanic(t, "error", func() { mysqlAsserter.TableExists(t, table) })
 	assertPanic(t, "error", func() { mysqlAsserter.ColumnExists(t, table, column) })
+	assertPanic(t, "error", func() { mysqlAsserter.ColumnOfType(t, table, column, dataType) })
 	assertPanic(t, "error", func() { mysqlAsserter.ConstraintExists(t, table, constraint) })
 	assertPanic(t, "error", func() { mysqlAsserter.RowExists(t, table, row) })
 	assertPanic(t, "error", func() { mysqlAsserter.IndexExists(t, table, index) })

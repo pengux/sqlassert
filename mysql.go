@@ -77,6 +77,15 @@ func (pa *MysqlAsserter) ColumnNotExists(t testingT, table, column string) bool 
 	return !exists
 }
 
+func (pa *MysqlAsserter) ColumnOfType(t testingT, table, column, dataType string) bool {
+	exists := queryExists(pa.db, mysqlColumnOfTypeQuery, pa.dbName, table, column, dataType)
+	if !exists {
+		t.Errorf(errColumnNotOfType, column, table, dataType)
+	}
+
+	return exists
+}
+
 func (pa *MysqlAsserter) ConstraintExists(t testingT, table, constraint string) bool {
 	exists := queryExists(pa.db, mysqlConstraintExistsQuery, pa.dbName, table, constraint)
 	if !exists {
@@ -148,6 +157,16 @@ SELECT EXISTS(
 		table_schema = ?
 		AND table_name = ?
 		AND column_name = ?
+);
+`
+	mysqlColumnOfTypeQuery = `
+SELECT EXISTS(
+	SELECT 1 FROM information_schema.columns
+	WHERE
+		table_schema = ?
+		AND table_name = ?
+		AND column_name = ?
+		AND data_type = ?
 );
 `
 	mysqlConstraintExistsQuery = `
